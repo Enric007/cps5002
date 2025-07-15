@@ -1,41 +1,36 @@
-from Grid import Grid
-from spare_part import SparePart
-from recharge_station import RechargeStation
+class RechargeStation:
+    def __init__(self, station_id, x, y, capacity, grid):
+        self.station_id = station_id
+        self.x = x
+        self.y = y
+        self.capacity = capacity
+        self.grid = grid
+        self.stored_parts = []
+        self.bots = []
+        self.grid.add_entity(x, y, self)
 
-# Create a grid
-grid = Grid(10, 10)
+    def store_part(self, spare_part):
+        self.stored_parts.append(spare_part)
+        print(f"[STATION] Stored part {spare_part.part_id} at Station {self.station_id}")
 
-# Create a recharge station
-station1 = RechargeStation(station_id=1, x=5, y=5, grid=grid)
-grid.add_entity(5, 5, station1)
+    def add_bot(self, bot):
+        if len(self.bots) < self.capacity:
+            self.bots.append(bot)
+            print(f"[STATION] Bot {bot.bot_id} added to Station {self.station_id}")
+        else:
+            print(f"[STATION] Station {self.station_id} is at full capacity. Cannot add Bot {bot.bot_id}")
 
-# Add spare parts
-part1 = SparePart(part_id=1, x=2, y=2, size="small", grid=grid)
-station1.store_part(part1)
+    def recharge_bots(self):
+        if not self.stored_parts:
+            print("[STATION] No spare parts available to recharge bots.")
+            return
 
-# Simulate bots arriving
-class Bot:
-    def __init__(self, bot_id, energy=50, max_energy=100):
-        self.bot_id = bot_id
-        self.energy = energy
-        self.max_energy = max_energy
+        for bot in self.bots:
+            if bot.energy < bot.max_energy:
+                bot.energy = min(bot.max_energy, bot.energy + 10)
+                print(f"[RECHARGE] Bot {bot.bot_id} recharged to {bot.energy}%")
+            else:
+                print(f"[RECHARGE] Bot {bot.bot_id} is already fully charged.")
 
-bot1 = Bot(bot_id=101)
-bot2 = Bot(bot_id=102)
-
-station1.add_bot(bot1)
-station1.add_bot(bot2)
-
-# Simulate recharging
-print("\nBefore Recharge:")
-print(f"Bot1 Energy: {bot1.energy}%")
-print(f"Bot2 Energy: {bot2.energy}%")
-
-print("\nSimulating Recharge...")
-for _ in range(5):
-    station1.recharge_bots()
-
-# After recharge
-print("\nAfter Recharge:")
-print(f"Bot1 Energy: {bot1.energy}%")
-print(f"Bot2 Energy: {bot2.energy}%")
+    def __str__(self):
+        return f"Station{self.station_id}"
